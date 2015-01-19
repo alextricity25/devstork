@@ -1,0 +1,13 @@
+auth:
+  username: your_openstack_username
+  project_id: your_tenant_id
+  api_key: your_openstack_password
+  auth_url: your_keystone_url
+  region_name: your_region
+
+name: name-of-your-server
+flavor: flavor
+image: image-id
+key_name: keypair-name
+id_file: /home/your_user/.server-id
+userdata_file: devstack-userdata.sh
