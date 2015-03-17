@@ -18,7 +18,7 @@ chmod 440 /etc/sudoers.d/90-stack-user
 
 # Required software
 apt-get update
-apt-get install -y git python-pip lvm2 vim
+apt-get install -y git python-pip lvm2 vim squid3
 
 # Init the ssd space on the baremetal io
 pvcreate /dev/sdb
