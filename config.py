@@ -63,7 +63,7 @@ def validate_config(config, config_name, env_name, arg_name):
         )
 
 
-def get_config(args=None):
+def get_config(args):
     """
     Loads config from a file.
     Updates the config with environment variables.
@@ -125,37 +125,7 @@ def get_config(args=None):
     }, args)
 
     # Validate configuration
-    validation_list = [
-        {
-            'config': config,
-            'name': 'name',
-            'env_name': 'DS_NAME',
-            'arg_name': '--ds-name'
-        },
-        {
-            'config': config,
-            'name': 'flavor',
-            'env_name': 'DS_FLAVOR',
-            'arg_name': '--ds-flavor'
-        },
-        {
-            'config': config,
-            'name': 'image',
-            'env_name': 'DS_IMAGE',
-            'arg_name': '--ds-image'
-        },
-        {
-            'config': config,
-            'name': 'key_name',
-            'env_name': 'DS_KEY_NAME',
-            'arg_name': '--ds-key-name'
-        },
-        {
-            'config': config,
-            'name': 'userdata_file',
-            'env_name': 'DS_USERDATA_FILE',
-            'arg_name': '--ds-userdata-file'
-        },
+    validation_always_required = [
         {
             'config': config['auth'],
             'name': 'username',
@@ -185,10 +155,53 @@ def get_config(args=None):
             'name': 'region_name',
             'env_name': 'DS_AUTH_REGION_NAME',
             'arg_name': '--ds-auth-region-name'
+        },
+        {
+            'config': config,
+            'name': 'id_file',
+            'env_name': 'DS_ID_FILE',
+            'arg_name': '--ds-id-file'
         }
     ]
 
-    for i in validation_list:
-        validate_config(i['config'], i['name'], i['env_name'], i['arg_name'])
+    for i in validation_always_required:
+        validate_config(i['config'], i['name'],
+                        i['env_name'], i['arg_name'])
 
+    if args.action == 'create':
+        validation_on_create = [
+            {
+                'config': config,
+                'name': 'name',
+                'env_name': 'DS_NAME',
+                'arg_name': '--ds-name'
+            },
+            {
+                'config': config,
+                'name': 'flavor',
+                'env_name': 'DS_FLAVOR',
+                'arg_name': '--ds-flavor'
+            },
+            {
+                'config': config,
+                'name': 'image',
+                'env_name': 'DS_IMAGE',
+                'arg_name': '--ds-image'
+            },
+            {
+                'config': config,
+                'name': 'key_name',
+                'env_name': 'DS_KEY_NAME',
+                'arg_name': '--ds-key-name'
+            },
+            {
+                'config': config,
+                'name': 'userdata_file',
+                'env_name': 'DS_USERDATA_FILE',
+                'arg_name': '--ds-userdata-file'
+            },
+        ]
+        for i in validation_on_create:
+            validate_config(i['config'], i['name'],
+                            i['env_name'], i['arg_name'])
     return config
