@@ -1,13 +1,15 @@
-import argparse
 import os
 import pprint
 import yaml
 import novaclient.exceptions
 from novaclient.v1_1 import client
 
+from config import get_config
+from parser import get_parser
 
-conf = None
+global conf
 osclient = None
+
 
 def load_config(location):
     """
@@ -20,6 +22,7 @@ def load_config(location):
     global conf
     with open(location) as f:
         conf = yaml.safe_load(f)
+
 
 def get_server():
     """
@@ -42,26 +45,29 @@ def get_server():
             pass
     return None
 
+
 def get_userdata():
     """
     Returns the contents of the userdata file specified by the config.
 
     @returns String
-    
+
     """
     global conf
     userdata = None
     with open(conf['userdata_file'], 'r') as f:
         userdata = f.read()
-    return userdata 
+    return userdata
+
 
 def create(args):
     """
     Creates the server if it doesn't already exist.
     If a server is created, it's uuid is saved to a file so that
     it can be deleted easily later.
-   
+
     @params args - Args created by ArgParser
+
     """
     global osclient
     global conf
@@ -91,6 +97,7 @@ def create(args):
     with open(conf['id_file'], 'w') as f:
         f.write(server.id)
 
+
 def delete(args):
     """
     Deletes the server if the file already exists.
@@ -107,23 +114,18 @@ def delete(args):
         print "Nothing to delete."
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Manage an OpenStack vm with configured flavor, image, and userdata.")
-    parser.add_argument('--conf', type=str, help="location of yaml configuration file", default="conf.yaml")
+    global conf
 
-    subparsers = parser.add_subparsers(title='subcommands')
-    parser_create = subparsers.add_parser('create', help='Create the instance')
-    parser_create.set_defaults(func=create)
-
-    parser_delete = subparsers.add_parser('delete', help='Delete the instance')
-    parser_delete.set_defaults(func=delete)
-
+    parser = get_parser()
     args = parser.parse_args()
 
-    # Load config
-    load_config(args.conf)
+    conf = get_config(args)
 
     # Create Nova client
     osclient = client.Client(**conf.get('auth', {}))
 
     # Run the subcommand - either create or delete
-    args.func(args)
+    if args.action == 'create':
+        create(args)
+    elif args.action == 'delete':
+        delete(args)
