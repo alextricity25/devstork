@@ -11,3 +11,9 @@ image: image-id
 key_name: keypair-name
 id_file: /home/your_user/.server-id
 userdata_file: devstack-userdata.sh
+userdata_status_file: /tmp/userdata_status
+userdata_end_status: FINISHED
+ssh_user: root
+ssh_timeout: 10
+ssh_keyfile: ~/.ssh/id_rsa
+create_timeout: 1800

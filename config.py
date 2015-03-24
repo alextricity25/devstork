@@ -92,12 +92,18 @@ def get_config(args):
 
     # Config from environment
     config_from_env(config, {
+        'create_timeout': 'DS_CREATE_TIMEOUT',
         'name': 'DS_NAME',
         'flavor': 'DS_FLAVOR',
         'image': 'DS_IMAGE',
         'key_name': 'DS_KEY_NAME',
         'id_file': 'DS_ID_FILE',
-        'userdata_file': 'DS_USERDATA_FILE'
+        'userdata_file': 'DS_USERDATA_FILE',
+        'userdata_status_file': 'DS_USERDATA_STATUS_FILE',
+        'userdata_end_status': 'DS_USERDATA_END_STATUS',
+        'ssh_keyfile': 'DS_SSH_KEYFILE',
+        'ssh_timeout': 'DS_SSH_TIMEOUT',
+        'ssh_user': 'DS_SSH_USER'
     })
     config_from_env(config['auth'], {
         'username': 'DS_AUTH_USERNAME',
@@ -109,12 +115,18 @@ def get_config(args):
 
     # Config from args
     config_from_args(config, {
+        'create_timeout': 'ds_create_timeout',
         'name': 'ds_name',
         'flavor': 'ds_flavor',
         'image': 'ds_image',
         'key_name': 'ds_key_name',
         'id_file': 'ds_id_file',
-        'userdata_file': 'ds_userdata_file'
+        'userdata_file': 'ds_userdata_file',
+        'userdata_end_status': 'ds_userdata_end_status',
+        'userdata_status_file': 'ds_userdata_status_file',
+        'ssh_keyfile': 'ds_ssh_keyfile',
+        'ssh_timeout': 'ds_ssh_timeout',
+        'ssh_user': 'ds_ssh_user'
     }, args)
     config_from_args(config['auth'], {
         'username': 'ds_auth_username',
@@ -123,6 +135,24 @@ def get_config(args):
         'auth_url': 'ds_auth_auth_url',
         'region_name': 'ds_auth_region_name'
     }, args)
+
+    # Convert string to numeric
+    if config.get('create_timeout'):
+        config['create_timeout'] = int(config['create_timeout'])
+    if config.get('ssh_timeout'):
+        config['ssh_timeout'] = int(config['ssh_timeout'])
+
+    # Defaults
+    if not config.get('create_timeout'):
+        config['create_timeout'] = 60 * 60 * 1
+    if not config.get('ssh_user'):
+        config['ssh_user'] = 'root'
+    if not config.get('ssh_timeout'):
+        config['ssh_timeout'] = 10
+    if not config.get('ssh_keyfile'):
+        config['ssh_keyfile'] = os.path.expanduser('~/.ssh/id_rsa')
+    if not config.get('userdata_end_status'):
+        config['userdata_end_status'] = 'FINISHED'
 
     # Validate configuration
     validation_always_required = [

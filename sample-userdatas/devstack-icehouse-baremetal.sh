@@ -1,8 +1,12 @@
 #!/bin/bash
 
+status_file=/tmp/userdata_status
+echo "RUNNING" > ${status_file}
+
 HAYSTACK=/var/log/cloud-init.log
 NEEDLE="backgrounded Resizing took"
 
+echo "Waiting for background resizing to finish" > ${status_file}
 while [ $(grep "$NEEDLE" $HAYSTACK -i --count) -eq "0" ]; do
     echo "Waiting for backgrouded Resizing to finish"
     sleep 5
@@ -12,14 +16,17 @@ done
 useradd stack -d /home/stack -s /bin/bash -g sudo
 mkdir -p /home/stack
 chown -R stack /home/stack
+chown stack /tmp/userdata_status
 echo "# User rules for root" >> /etc/sudoers.d/90-stack-user
 echo "stack ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/90-stack-user
 chmod 440 /etc/sudoers.d/90-stack-user
 
+echo "Installing software before devstack" > ${status_file}
 # Required software
 apt-get update
 apt-get install -y git python-pip lvm2 vim squid3
 
+echo "Creating logical volumes on ssds" > ${status_file}
 # Init the ssd space on the baremetal io
 pvcreate /dev/sdb
 pvcreate /dev/sdc
@@ -32,6 +39,7 @@ cat <<'EOF' >> /home/stack/init.sh
 #!/bin/bash
 {
     set -x
+    status_file=/tmp/userdata_status
     # Upgrade setuptools
     sudo pip install --upgrade setuptools
     sudo pip install --upgrade decorator
@@ -66,6 +74,7 @@ cat <<'EOF' >> /home/stack/init.sh
     echo "HOST_IP=$(ifconfig bond0.101 | awk '/inet addr/{print substr($2,6)}')" >> local.conf
 
     # Run devstack's stack.sh script
+    echo "Stacking devstack" > ${status_file}
     ./stack.sh
 
     #source openrc admin admin secrete
@@ -83,9 +92,11 @@ cat <<'EOF' >> /home/stack/init.sh
     nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0
     glance image-create --name "Ubuntu 12.04 software config" --disk-format qcow2 --location http://ab031d5abac8641e820c-98e3b8a8801f7f6b990cf4f6480303c9.r33.cf1.rackcdn.com/ubuntu-softwate-config.qcow2 --is-public True --container-format bare
 } 2>&1 >> /home/stack/init-log
+    echo "FINISHED" > ${status_file}
 EOF
 
 chmod o+x /home/stack/init.sh
 chown stack /home/stack/init.sh
 
 su stack -c "at -f /home/stack/init.sh now + 1 minute"
+echo "Scheduled devstack" > ${status_file}
