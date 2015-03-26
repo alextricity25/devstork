@@ -129,6 +129,9 @@ set -x
     echo "enable_service q-l3" >> local.conf
     echo "enable_service q-meta" >> local.conf
     echo "enable_service neutron" >> local.conf
+    echo "enable_service ceilometer-acompute ceilometer-acentral ceilometer-anotification ceilometer-collector" >> local.conf
+    echo "enable_service ceilometer-alarm-evaluator,ceilometer-alarm-notifier" >> local.conf
+    echo "enable_service ceilometer-api" >> local.conf
     echo "HOST_IP=$(ifconfig bond0.101 | awk '/inet addr/{print substr($2,6)}')" >> local.conf
     echo "Q_PLUGIN=ml2" >> local.conf
     echo "Q_ML2_TENANT_NETWORK_TYPE=vxlan" >> local.conf
