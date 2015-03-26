@@ -38,6 +38,7 @@ mount -t ext4 /dev/mapper/ssdpool-ssd1 /opt
 # Drop in the correct neutron ml2 configs. Devtack does not currently support
 # the needed sections for a working ml2 linuxbridge neutron with vxlan tenant networks.
 # Therefore, we need to configure it ourselves
+
 cat <<EOF >> /tmp/ml2_conf.ini
 [ml2]
 type_drivers = flat,vlan,vxlan,local
@@ -180,6 +181,7 @@ set -x
     nova secgroup-add-rule default tcp 22 22 0.0.0.0/0
     nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0
     glance image-create --name "Ubuntu 12.04 software config" --disk-format qcow2 --location http://ab031d5abac8641e820c-98e3b8a8801f7f6b990cf4f6480303c9.r33.cf1.rackcdn.com/ubuntu-softwate-config.qcow2 --is-public True --container-format bare
+    echo "Finished!"
 } 2>&1 >> /home/stack/init-log
 echo "FINISHED" > ${status_file}
 EOF
@@ -187,5 +189,5 @@ EOF
 chmod uo+x /home/stack/init.sh
 chown stack /home/stack/init.sh
 
-su stack -c "/home/stack/init.sh"
 echo "Scheduled devstack" > ${status_file}
+su stack -c "/home/stack/init.sh"
