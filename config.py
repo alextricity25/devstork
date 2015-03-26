@@ -47,7 +47,8 @@ def config_from_args(config, map_, args):
 def validate_config(config, config_name, env_name, arg_name):
     """
     Checks to make sure a key of config_name exists in dictionary config
-    with a non false truth evaluation of the value.
+    with a non false truth evaluation of the value. Also checks the id_file
+    is in place.
 
     @param config - Dictionary
     @param config_name - String
@@ -61,7 +62,15 @@ def validate_config(config, config_name, env_name, arg_name):
             "environment as %s, "
             "or as an argument %s" % (config_name, env_name, arg_name)
         )
-
+ 
+    #Checking to see if the directory of id_file exists
+    if config_name == "id_file":
+        id_dir = os.path.dirname(config['id_file'])
+        if not os.path.isdir(id_dir):
+            raise Exception(
+                "The id_file directory does not exist. "
+                "Please verify the directory exists."
+            )
 
 def get_config(args):
     """
