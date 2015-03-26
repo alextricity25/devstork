@@ -59,7 +59,7 @@ vni_ranges = 1:1000
 [vxlan]
 enable_vxlan = True
 vxlan_group = 
-local_ip = $(ifconfig eth0 | awk '/inet addr/{print substr($2,6)}')
+local_ip = $(ifconfig bond0.101 | awk '/inet addr/{print substr($2,6)}')
 l2_population = True
 
 
@@ -73,7 +73,7 @@ vxlan_udp_port = 4789
 
 
 [linux_bridge]
-physical_interface_mappings = vlan:eth0
+physical_interface_mappings = vlan:bond0.101
 
 
 [l2pop]
@@ -98,11 +98,11 @@ set -x
 
     # grant external access to vms
     echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
-    sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    sudo iptables -t nat -A POSTROUTING -o bond0.101 -j MASQUERADE
 
     # Creating a sub-interface with an IP to use as a gateway
     # for the neutron physical provider network. 
-    sudo ip addr add 172.16.1.2/24 dev eth0 label eth0:1
+    sudo ip addr add 172.16.1.2/24 dev bond0.101 label bond0.101:1
 
     cd /home/stack
     ssh-keygen -t rsa -N "" -f /home/stack/.ssh/id_rsa
@@ -128,7 +128,7 @@ set -x
     echo "enable_service q-l3" >> local.conf
     echo "enable_service q-meta" >> local.conf
     echo "enable_service neutron" >> local.conf
-    echo "HOST_IP=$(ifconfig eth0 | awk '/inet addr/{print substr($2,6)}')" >> local.conf
+    echo "HOST_IP=$(ifconfig bond0.101 | awk '/inet addr/{print substr($2,6)}')" >> local.conf
     echo "Q_PLUGIN=ml2" >> local.conf
     echo "Q_ML2_TENANT_NETWORK_TYPE=vxlan" >> local.conf
     echo "Q_AGENT=linuxbridge" >> local.conf
@@ -142,7 +142,7 @@ set -x
     export OS_USERNAME=admin
     export OS_TENANT_NAME=admin
     export OS_PASSWORD=secrete
-    export OS_AUTH_URL=http://$(ifconfig eth0 | awk '/inet addr/{print substr($2,6)}'):5000/v2.0
+    export OS_AUTH_URL=http://$(ifconfig bond0.101 | awk '/inet addr/{print substr($2,6)}'):5000/v2.0
 
     # Delete neutron resources that have been put in place by devstack
     neutron router-gateway-clear router1
